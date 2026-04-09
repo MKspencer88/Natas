@@ -153,7 +153,181 @@ This indicated to me that there was something wrong with the Referer header. Usi
 
 This reavealed the server was checking the 'Referer' HTTP header to make access control decisions. Since the Referer headers is fully client-controlled, it can be set to any value. 
 
-"You didn't come from the right place, go away." Is the message I am getting, 
+"You didn't come from the right place, go away." Is the message I am getting. '
+
+The command `curl -u natas4:QryZXc2e0zahULdHrtHxzyYkj59kUxLQ -e "http://natas5.natas.labs.overthewire.org/" http://natas4.natas.labs.overthwire.org/` 
+
+<img width="944" height="443" alt="Screenshot 2026-04-08 154751" src="https://github.com/user-attachments/assets/9e091ca1-e0f9-45ab-a36b-1c9d1465afef" />
+
+The `-e` flag stands for referer. It manually sets the Referer header in the HTTP request to whatever value you give it. 
+
+### What I Learned 
+
+HTTP headers are fully client-controlled and cannot be trusted for access control. The Referer header can be set to any value using curl, Burp Suite, or browser extenstions. Real access control requires server-side session tokens that cannot be forged. 
+
+### Real-World Impact
+
+Maps to OWASP A01, broken access control(#1 web security risk). Referer-based checks have been found in the wild protecting admin panels, password reset flows, and API endpoints. All trivially bypassed with a single curl command. 
+
+# Natas 4 ---> 5 
+
+**Vulnerability:** Weak authentication using client-side modifiable cookies
+
+**Difficulty:** Easy
+
+**Category:** Web Security / Authentication Flaws
+
+### What I Did
+
+When I first went to `http://natas5.natas.labs.overthewire.org` the error on the page said "Access disallowed. You are not logged in." 
+
+<img width="938" height="347" alt="Screenshot 2026-04-09 113308" src="https://github.com/user-attachments/assets/3882a155-39ab-48f8-b37c-703cbdaebb7e" />
+
+I'll admit I wasn't sure where to go from here so I did some research and all signs were pointing me to look at the sessions cookies. So I opened `Web developers tools --> storage ---> cookies` 
+
+<img width="960" height="291" alt="image" src="https://github.com/user-attachments/assets/c33707f8-a109-4107-9a48-9c28b882cb5f" />
+
+I saw a cookie named `loggedin` with a value set to `0`. This mean the server is trusting the client to tell it whether the user is autenticated. 
+
+I clicked on the value and changed it from `0` to `1` and refreshed the page 
+
+<img width="973" height="279" alt="Screenshot 2026-04-09 121024" src="https://github.com/user-attachments/assets/a43ebd90-6d42-4b5d-bd31-d440151653f4" />
+
+<img width="944" height="582" alt="image" src="https://github.com/user-attachments/assets/6d00170e-cefc-4b09-b5ea-3be3916b608f" />
+
+### What I Learned
+- Never trust client-side state for authentication, cookies can be modified by the user at anytime.
+- Authentication must be enforced server-side. The server should validate sessions using signed cookies, server-side session storage, and tokens that cannot be forged.
+- Binary flag like `loggedin=0/1` are insecure. Attackers can flip them instantly. This level reinforces a core principle, if the user can modify it, it cannot be used to enforce security.
+
+### Real-World Impact
+- This vulnerability mirrors real-world issues such as sites using `isAdmin=true` cookies, applications trustint client-side JWTs without signatures, debug flag left in production, session IDs that are predictable or modifiable.
+- Attackers can exploit these to bypass login, escalate privileges, access admin panels, impersonate other users.
+- This is a classic example of broken authentication, one of the OWASP Top 10.
+
+# Natas 5 ---> 6
+
+**Vulnerability:** Sensitive server-side secrets stored in publicly acccesible files. 
+
+**Difficulty:** Easy
+
+**Category:** Web Security / Server-Side Code Analysis
+
+### What I Did
+
+When I logged on to `http://natas6.natas.labs.overthewire.org` this was the main page. 
+
+<img width="948" height="393" alt="image" src="https://github.com/user-attachments/assets/9aa3686b-cd90-4f53-b5b8-80e2c0e1ab77" />
+
+I clicked on `View Source Code` and it a certain part stood out to me. 
+
+<img width="952" height="668" alt="image" src="https://github.com/user-attachments/assets/3c5d020a-69bf-4e9f-b7ef-f1444fbf8174" />
+
+I noticed that `include "includes/secret.inc"` so if I were to add `includes/secret.inc` to the URL hopefully it gave me the secret needed. At first it showed me a blank page bu then I remembered to view the source code. 
+
+<img width="362" height="134" alt="image" src="https://github.com/user-attachments/assets/8bfa5e6c-f557-4881-b93f-f09bcf815a47" />
+
+<img width="888" height="281" alt="image" src="https://github.com/user-attachments/assets/b1896368-0ecf-4f91-b9cd-5806bf8b3779" />
+
+And when I submit that query it revealed the password to natas7 to me. 
+
+<img width="858" height="268" alt="Screenshot 2026-04-09 130238" src="https://github.com/user-attachments/assets/d80ce704-df79-4590-afed-20587d30e2ed" />
+
+### What I Learned
+- Included files can be directly accessible if stored inside the web root. If a developer places sensitive configurations files in a publicly reachable directory, attackers can retrieve them simply by navigating the path.
+- Server-side secrets must never be stored in web-accessible locations. They should be placed outside the document root or protected by server configuration.
+- Understanding PHP behavior is essential for web exploitation. If the the code references an external file, alwasy check whether that file is exposed.
+- Security depends on sever configuration, not just code.
+
+### Real-World Impact
+- This vulnerability is extremely common in real environments, developers accidentally deploy `.inc`, `.bak`, `.old`, or `.php~` files. Miconfigured Apaches/Nginx servers allows directory traversal, backup files or environment configs are left in public folders, and sensitive key or credentials are stored in web-accessible directories.
+- Attackers routinely find, database password, API keys, internal configuration files, source code and secrets used for authentication or encryption.
+- This is a classic example of information disclousure due to insecure file placement. A frequent finding in pen tests and bug bounty programs.
+
+# Natas 6 ---> 7 
+
+**Vulnerability:** Directory traversal via unsanistized `page` parameter
+
+**Difficulty:** Easyish
+
+**Category:** Web Security / Path Manipulation
+
+### What I Did
+
+When I logged into `https://natas7.natas.labs.overthewire.org` it displayed two links. 
+- `Home`
+- `About`
+
+<img width="958" height="310" alt="image" src="https://github.com/user-attachments/assets/5b140ce4-b3e5-48eb-885b-9f7b9548035c" />
+
+The URL changed depending on which link I clicked. 
+```
+?page=home
+?page=about
+```
+Taking what I learned from the previous levels I clicked on view source code and in the code I was given a hint on where to find the password for Natas8. 
+
+<img width="948" height="455" alt="image" src="https://github.com/user-attachments/assets/e166d585-8bc5-4037-ab47-b7a4b38a7d27" />
+
+the hint told me that I could find the password in `/etc/natas_webpass/natas8`. 
+
+In the URL after `?page=` I entered `/etc/natas_webpass/natas8` when I pressed enter it revealed the new password to me. 
+
+<img width="932" height="392" alt="Screenshot 2026-04-09 133728" src="https://github.com/user-attachments/assets/16e4121e-edbf-4e20-9fa5-5dba27d40e3b" />
+
+### What I Learned
+- Never pass user input directly into file fucntion. Functions like `include()`, `require()`, `file_get_contents()`, and `fopen()` are dangerous when combined with unsanitized parameters.
+- Directory traversal is one of the oldest and most reliable web vulnerabilities. Attackers can use `../` to absolute paths to access sensitive files.
+- Server-side file inclusion must always be validated. Developers should use whitelists, restrict to specific directories, and avoid dynamic includes entirely.
+- User input shoud never control which server-side files are execute or read.
+
+### Real-World Impact
+- Directory traversal vulnerabilities are extremely common in, PHP applicatons using dynamic includesm CMS plugins, legacy codebases, poorly validated file download endpoints, and debug or devlopment tools left exposed.
+- Attackers can use this flaw to read configuration files, extract database credentials, access environment variables, read source code, and escalate to remote code execution.
+- This a textbook example of path traversal leading to sensitive data exposure, a critical issue in penetration testing and bug bounty work.
+
+# Natas 7 ---> 8
+
+**Vulnerability:** Predictable server-side encoding used to "hide" a secret
+
+**Difficulty:** Medium
+
+**Category:** Web Security / Encoding and Logic Reversal
+
+### What I Did
+
+When I first logged into `https://natas8.natas.labs.overthewire.org` and it was another `input secret` box. 
+
+<img width="856" height="286" alt="image" src="https://github.com/user-attachments/assets/107cd0f0-b712-4dbc-90eb-560a3b5b4115" />
+
+I clicked the `view source code` link and reading through the code and this code is what stood out to me. 
+
+<img width="540" height="241" alt="Screenshot 2026-04-09 141351" src="https://github.com/user-attachments/assets/fd9ede4c-8717-4444-bbd1-efea552b6bd9" />
+
+What I need to do is to decode it. According to the code it was converted from text to a hexstring. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
