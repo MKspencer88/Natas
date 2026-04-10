@@ -304,7 +304,100 @@ I clicked the `view source code` link and reading through the code and this code
 
 <img width="540" height="241" alt="Screenshot 2026-04-09 141351" src="https://github.com/user-attachments/assets/fd9ede4c-8717-4444-bbd1-efea552b6bd9" />
 
-What I need to do is to decode it. According to the code it was converted from text to a hexstring. 
+What I need to do is to decode it. According to the code it was converted from text to a hexstring. In my terminal
+I ran the command `echo "3d3d516343746d4d6d6c315669563362"" | base64 -d` and this commmand decodes this hexstring into a base64 string. 
+
+<img width="465" height="77" alt="image" src="https://github.com/user-attachments/assets/11f467b1-ef8d-4e6e-99aa-42572b026ceb" />
+
+According to the code I found in the source code it said the string was reversed. So my output was `==QcCtmMml1ViV3b` but in order to get the correct `secret` I revesered it. 
+
+My next command `echo "b3ViV1lmMmtCcQ==" | base64 -d` 
+
+<img width="348" height="69" alt="image" src="https://github.com/user-attachments/assets/cbf2808a-22ea-400a-bb59-f7bff4d6bb1a" />
+
+I input this output into the input box it gave me the secret. 
+
+<img width="760" height="364" alt="Screenshot 2026-04-10 125923" src="https://github.com/user-attachments/assets/dbe1dfa7-959d-41b1-828e-476a397b7073" />
+
+### What I Learned
+- Encoding is not encryption. Anyone can reverse encoding if algorithm is visible.
+- Security through obscurity is not security. Hiding a secrety behing reversible transformations does not protect it.
+- Source code analysis is a powerful technique. When you can see the logic, you can replicate or revsere it.
+- The attacker can see the algorithim, they can reverse the algorithm.
+
+### Real-World Impact
+- This vulnerability mirrors real mistakes developers make storing API keys or secrets "encoded" form, using reversible transformations instead of proper encrytpion. Assuming attackers won't read reverse client-side logic and obfuscating values instead of protecting them.
+- Attacker routinely reverse base64, hex, ROT13, XOR, custom "encryption" functions, and JavaScript obfuscation.
+
+# Natas 8 ---> 9 
+
+**Vulnerabilities:** Command Injection via unsanitized user input passed to `grep`
+
+**Difficulty:** Medium
+
+**Category:** Web Security / Command Injection
+
+### What I Did
+
+When I first logged into to Natas9, there wasn't on anything on the screen to indicate any sort of clues. 
+
+<img width="820" height="296" alt="image" src="https://github.com/user-attachments/assets/851b058c-b3a7-448c-97db-65a05766d2b5" />
+
+I clicked the `View sourcecode` link to inspect the backend logic. 
+
+<img width="570" height="304" alt="image" src="https://github.com/user-attachments/assets/e672b643-685e-4734-8456-03133a5c6cfb" />
+
+This is a command injection vulnerability because:
+- User input(`needle`) is inserted directly into a shell command
+- There is **no sanitization**
+- The command is executed using `shell_exec()`
+
+Meaning I can break out of the `grep` command and run any shell command the server allows. 
+
+To break out of the `grep` command I used this `; cat /etc/natas_webpass/natas10` the `;` ends the original command and starts a new one. So the full URL becomes `http://natas9.natas.labs.overthewire.org/?needle=%3B+cat+%2Fetc%2Fnatas_webpass%2Fnatas10&submit=Search` 
+
+When I pressed search it revealed the password to me. 
+
+<img width="961" height="393" alt="Screenshot 2026-04-10 143900" src="https://github.com/user-attachments/assets/67a2125b-1b40-48fe-b93e-8e50840d444f" />
+
+### What I Learned
+- Never pass user input directly into shell commands functions like `shell_exec()`, `exec()`, `system()` and backticks(`command`) are extremely dangerous when combined with unsanitized input.
+- Attackers can chain commands using `;`, `&&`, `|`, backticks, and `$()`
+- Command injection is one of the most severe vulnerabilities it often leads to file disclousure, remote code execution, and full system compromise.
+- If user input reaches the shell, assume the attacker owns your server.
+
+### Real-World Impact
+- Command injection is devestating in real systems attackers can read `/etc/password`, SSH keys, API keys, modifiy of delete files, pivot into terminal networks, install backdoors, and execute arbitrary code.
+- This vulnerability is frequently found on web apps calling system utilities, file search features, PDF/image converters, backup scripts, IoT devices, routers and embedded systems.
+- This is why secure coding guidelines strongly recommend avoiding shell calls entirely, using parameterizewd APIs, escaping input, and validating against strict whitelists.
+
+# Natas 9 ---> 10 
+
+**Vulnerability:** Filtered command injection (bypassing blacklists)
+
+**Difficulty:** Medium --> Medium-High
+
+**Category:** Web Security / Command Injection / Filter Evasion
+
+### What I Did
+
+When I logged into Natas10 it was almost identical to Natas9. I cliced `View sourcecode` 
+
+<img width="958" height="421" alt="image" src="https://github.com/user-attachments/assets/4ac7b456-5543-45f0-826c-a1263408af5c" />
+
+The script is similar to the one in Natas9, except the server blocks, `;`, `|`, `&`, these characters we used in Natas9 to break out of the `grep` command. So now I need to figure out a new way to escape the `grep` commmand. 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
