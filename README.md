@@ -381,13 +381,13 @@ When I pressed search it revealed the password to me.
 
 ### What I Did
 
-When I logged into Natas10 it was almost identical to Natas9. I cliced `View sourcecode` 
+When I logged into Natas10 it was almost identical to Natas9. I clicked `View sourcecode` 
 
 <img width="958" height="421" alt="image" src="https://github.com/user-attachments/assets/4ac7b456-5543-45f0-826c-a1263408af5c" />
 
 The script is similar to the one in Natas9, except the server blocks, `;`, `|`, `&`, these characters we used in Natas9 to break out of the `grep` command. So now I need to figure out a new way to escape the `grep` commmand. 
 
-
+It took me a minute to find the correct command that could escape the command
 
 
 
