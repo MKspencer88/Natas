@@ -387,7 +387,69 @@ When I logged into Natas10 it was almost identical to Natas9. I clicked `View so
 
 The script is similar to the one in Natas9, except the server blocks, `;`, `|`, `&`, these characters we used in Natas9 to break out of the `grep` command. So now I need to figure out a new way to escape the `grep` commmand. 
 
-It took me a minute to find the correct command that could escape the command
+It took me a minute to find the correct command that could escape the `grep` command. The one that finally worked for me was `cat . /etc/natas_webpass/natas11` and it gave me the password and a bunch of other noise but I got the password. 
+
+<img width="929" height="502" alt="image" src="https://github.com/user-attachments/assets/73aa460f-dc1d-4380-9492-8a6b9e3dca5f" />
+
+### What I Learned
+- Blacklists are weak, blocking a few chatacters does not stop attckers. They simply use alternative operators.
+- Command substitution is extremely powerful.
+- Input validation must be whitelisted-based, not blacklisted based. The only safe approach is strict whitelists, escaping, and avoiding shells commands entirely.
+- If user input reaches the shell, assume it can be exploited, even with filters.
+
+### Real-World Impact
+- This vulnerability is common in web apps that call systems utilities, file search features, backup scripts, IoT devices, and admin panels with diagnostic tools.
+- Attackers can use filter bypasses to read sensitive files, execute arbitrary commands, escalate privileges, and pivot deeper into the system.
+- This is why modern secure coding practices strongly discourage shell calls with user input.
+
+# Natas10 ---> 11
+
+**Vulnerability:** Weak XOR "encryption" + trusting client-side cookies
+
+**Difficulty:** Medium-High
+
+**Category:** Web Security / Crypto Misuse / Cookie Tampering 
+
+### What I Did
+
+When I loaded Natas11, the page tells me: **"Cookies are protected with XOR encryption"** 
+There is also a link to view to source code so I clicked on it. 
+
+**XOR:** exclusive OR is a logical/bitwise operation. 
+
+The Rule the XOR outputs true only when the input are different. 
+
+A     B    A XOR B 
+0     0    0 
+0     1    1 
+1     0    1
+1     1    0 
+
+Think of it as one or the other not both. 
+
+<img width="927" height="555" alt="image" src="https://github.com/user-attachments/assets/6aea98f4-dd26-4add-894e-e848acd5e30a" />
+
+The source code revealed:
+- The sever reads a cookie named `data`
+- It base64-decodes it
+- it XOR-decrypts it using a repeating key
+- It expects the decrypted JSON to look like
+
+The keyword that stood out to me was `cookie`. That clued me in that I need to look at the session cookies. This is going to require me to write a few python scripts. The first script is desgined to find the key and the second one is going to forge a cookie to insert in order to get the password. 
+
+findthekey.py
+
+<img width="552" height="237" alt="image" src="https://github.com/user-attachments/assets/e9947acf-fc24-4203-a13d-5d4abb47df1c" />
+
+
+
+
+
+
+
+
+
+
 
 
 
