@@ -436,7 +436,11 @@ The source code revealed:
 - it XOR-decrypts it using a repeating key
 - It expects the decrypted JSON to look like
 
-The keyword that stood out to me was `cookie`. That clued me in that I need to look at the session cookies. This is going to require me to write a few python scripts. The first script is desgined to find the key and the second one is going to forge a cookie to insert in order to get the password. 
+The keyword that stood out to me was `cookie`. That clued me in that I need to look at the session cookies.
+
+<img width="873" height="601" alt="image" src="https://github.com/user-attachments/assets/d4a180d0-ac56-4439-97aa-50260d75f522" />
+
+This is going to require me to write a few python scripts. The first script is desgined to find the key and the second one is going to forge a cookie to insert in order to get the password. 
 
 findthekey.py
 
