@@ -444,7 +444,6 @@ This is going to require me to write a few python scripts. The first script is d
 
 findthekey.py
 
-<img width="552" height="237" alt="image" src="https://github.com/user-attachments/assets/e9947acf-fc24-4203-a13d-5d4abb47df1c" />
 
 
 
