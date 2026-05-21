@@ -420,13 +420,19 @@ There is also a link to view to source code so I clicked on it.
 
 The Rule the XOR outputs true only when the input are different. 
 
-A     B    A XOR B 
-0     0    0 
-0     1    1 
-1     0    1
-1     1    0 
+- Data = the message in this case it the cookie value
 
-Think of it as one or the other not both. 
+<img width="308" height="185" alt="image" src="https://github.com/user-attachments/assets/eefc1cd4-79a4-4dba-8e84-2019b2bc13d2" />
+
+- The key = the password to lock and unlock it
+
+<img width="483" height="14" alt="image" src="https://github.com/user-attachments/assets/cf537467-63e1-468b-b9f0-0ab65ff8e964" />
+
+- XOR = the locking mechanism. It scrambles the real value using the key. It turns into a base64
+
+
+
+
 
 <img width="927" height="555" alt="image" src="https://github.com/user-attachments/assets/6aea98f4-dd26-4add-894e-e848acd5e30a" />
 
@@ -443,6 +449,9 @@ The keyword that stood out to me was `cookie`. That clued me in that I need to l
 This is going to require me to write a few python scripts. The first script is desgined to find the key and the second one is going to forge a cookie to insert in order to get the password. 
 
 findthekey.py
+
+<img width="683" height="259" alt="Screenshot 2026-05-21 112708" src="https://github.com/user-attachments/assets/2eec4188-ebb4-4641-a2bf-853103dc2273" />
+
 
 
 
